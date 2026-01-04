@@ -9,12 +9,16 @@
       ⚠️ {{ error }}
     </div>
 
+    <div v-else-if="workoutResponse.latestWorkouts.length == 0" class="text-gray-500 text-center">
+      No workouts found.
+    </div>
+
     <div
         v-else
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
     >
       <div
-          v-for="workout in workouts"
+          v-for="workout in workoutResponse.latestWorkouts"
           :key="workout.id"
           class="p-4 bg-white shadow rounded-lg hover:shadow-md transition cursor-pointer"
           @click="goToWorkout(workout.id)"
@@ -27,32 +31,33 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type {GetLatestWorkoutsResponseDTO} from "@/types/workout.ts"
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
-const workouts = ref([]);
+const workoutResponse = ref<GetLatestWorkoutsResponseDTO | null>(null);
 const isLoading = ref(true);
 const error = ref(null);
-
 const router = useRouter();
 
 onMounted(async () => {
+  await loadWorkouts();
+});
+
+async function loadWorkouts() {
   try {
-    const res = await fetch("/api/workouts/get");
-
+    const res = await fetch("/api/workouts");
     if (!res.ok) {
-      console.error('Failed to fetch workout:', res);
-      return;
+      error.value = "API returned status " + res.status;
     }
-
-    workouts.value = await res.json();
+    workoutResponse.value = await res.json();
   } catch (err) {
     error.value = err.message || "Failed to load workouts";
   } finally {
     isLoading.value = false;
   }
-});
+}
 
 function goToWorkout(id) {
   router.push(`/workouts/${id}`);

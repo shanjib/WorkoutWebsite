@@ -1,5 +1,13 @@
 <template>
-  <div class="p-6 space-y-6 max-w-2xl mx-auto">
+  <div v-if="isLoading" class="text-gray-500 text-center">
+    Loading next workout details...
+  </div>
+
+  <div v-else-if="error" class="text-red-600 text-center font-semibold">
+    ⚠️ {{ error }}
+  </div>
+
+  <div v-else class="p-6 space-y-6 max-w-2xl mx-auto">
     <h1 class="text-3xl font-bold">Create Workout</h1>
 
     <!-- Date Input -->
@@ -7,7 +15,7 @@
       <label class="block text-sm font-medium mb-1">Workout Date</label>
       <input
           type="date"
-          v-model="date"
+          v-model="createWorkoutRequest.date"
           class="w-full border rounded px-3 py-2"
       />
     </div>
@@ -16,8 +24,7 @@
     <div>
       <label class="block text-sm font-medium mb-1">Workout Type</label>
       <select
-          v-model="workoutType"
-          @change="loadExercises"
+          v-model="createWorkoutRequest.type"
           class="w-full border rounded px-3 py-2"
       >
         <option value="">-- Select --</option>
@@ -29,56 +36,27 @@
     </div>
 
     <!-- Exercises Section -->
-    <div v-if="isLoadingExercises" class="text-gray-500">
-      Loading exercises...
-    </div>
+    <h2 class="text-xl font-semibold">Exercises</h2>
 
-    <div v-if="exerciseError" class="text-red-600">
-      {{ exerciseError }}
-    </div>
-
-    <div v-if="exercises.length > 0" class="space-y-6">
-      <h2 class="text-xl font-semibold">Exercises</h2>
-
-      <div
-          v-for="(ex, index) in exercises"
-          :key="ex.id"
-          class="p-4 border rounded-lg bg-white shadow-sm"
-      >
-        <div class="text-lg font-bold mb-3">
-          {{ ex.name }}
-        </div>
-
-        <!-- Weight -->
-        <div class="mb-3">
-          <label class="block text-sm font-medium mb-1">Weight</label>
-          <input
-              type="number"
-              v-model.number="ex.weight"
-              class="w-full border rounded px-3 py-2"
-          />
-        </div>
-
-        <!-- Reps per set -->
-        <div class="mb-3">
-          <label class="block text-sm font-medium mb-1">Reps Per Set</label>
-          <input
-              type="number"
-              v-model.number="ex.reps"
-              class="w-full border rounded px-3 py-2"
-          />
-        </div>
-
-        <!-- Sets -->
-        <div class="mb-3">
-          <label class="block text-sm font-medium mb-1">Sets</label>
-          <input
-              type="number"
-              v-model.number="ex.sets"
-              class="w-full border rounded px-3 py-2"
-          />
-        </div>
+    <div
+        v-for="(weight, exercise, index) in createWorkoutRequest.exerciseToWeight"
+        class="p-4 border rounded-lg bg-white shadow-sm"
+    >
+      <div class="text-lg font-bold mb-3">
+        {{ exercise }}
       </div>
+
+      <!-- Weight -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium mb-1">Weight</label>
+        <input
+            type="number"
+            :value="weight"
+            @input="createWorkoutRequest.exerciseToWeight[index] = +$event.target.value"
+            class="w-full border rounded px-3 py-2"
+        />
+      </div>
+
     </div>
 
     <!-- Submit Button -->
@@ -91,8 +69,13 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script setup lang="ts">
+import type {GetNextWorkoutDetailsResponseDTO, CreateWorkoutRequestDTO} from "@/types/workout.ts"
+import { ref, onMounted } from "vue";
+const nextWorkoutDetails = ref<GetNextWorkoutDetailsResponseDTO | null>(null);
+const createWorkoutRequest = ref<CreateWorkoutRequestDTO | null>(null);
+const isLoading = ref(true);
+const error = ref(null);
 
 const date = ref("");
 const workoutType = ref("");
@@ -100,6 +83,26 @@ const exercises = ref([]);
 
 const isLoadingExercises = ref(false);
 const exerciseError = ref(null);
+
+onMounted(async () => {
+  await getNextWorkoutDetails();
+});
+
+async function getNextWorkoutDetails() {
+  try {
+    const res = await fetch(`/api/workouts/next`);
+    if (!res.ok) {
+      error.value = "API returned status " + res.status;
+      return;
+    }
+    nextWorkoutDetails.value = await res.json();
+    createWorkoutRequest.value = nextWorkoutDetails.value;
+  } catch (err) {
+    error.value = err;
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 // Fetch exercises when workout type is selected
 async function loadExercises() {
@@ -140,12 +143,12 @@ async function submitWorkout() {
     trackedExercises: exercises.value
   };
 
-  console.log("Submitting workout:", payload);
+  console.log("Submitting workout:", createWorkoutRequest.value);
 
-  const res = await fetch("/api/workouts/create", {
+  const res = await fetch("/api/workouts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(createWorkoutRequest.value)
   });
 
   if (!res.ok) {

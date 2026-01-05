@@ -1,73 +1,98 @@
 <template>
-  <div v-if="workoutFetchError">
-    <h1>Workout fetch error for workout {{id}}</h1>
+  <div v-if="isLoading">
+    Loading...
+  </div>
+  <div v-else-if="error">
+    <h1>Workout fetch error for workout {{ id }}</h1>
   </div>
   <div v-else>
-    <h1 class="workout-title">{{workout.type}} workout for {{workout.date}}</h1>
-  </div>
-  <div v-for="exercise in workout.trackedExercises" :key="exercise.id" class="exercise-card">
-    <h2 class="title">{{ exercise.name }}</h2>
-    <div class="weight-text">
-      <p>Working weight is {{ exercise.weight }}lb</p>
-      <div v-if="needsPlateLoadout(exercise.initialWeight)">
-        On each side please put:
+    <h1 class="workout-title">{{ workoutResponse.workout.type }} workout for {{ workoutResponse.workout.date }}</h1>
 
-        <div v-for="plate in getPlateLoadout(exercise.weight, exercise.initialWeight)">
-          {{ plate.count }} plate weighing {{ plate.plate }}lb
-        </div>
-      </div>
+    <div>
+
+      <button
+          @click="submitWorkout"
+          class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
+      >
+       Save
+      </button>
       <p></p>
     </div>
 
-    <div class="sets-container">
-      <div
-          v-for="set in exercise.sets"
-          :key="set"
-          class="set-row"
-          :class="{ completed: isSetComplete(exercise.id, set) }"
-      >
-        <div class="set-header">
-          <span class="set-label">Set {{ set }}</span>
+    <div v-for="exercise in workoutResponse.workout.exercises" :key="exercise.id" class="exercise-card">
+      <h2 class="title">{{ exercise.name }}</h2>
+      <div class="weight-text">
+        <p>Working weight is {{ exercise.weight }}lb</p>
+        <div v-if="exercise.barExercise">
+          On each side please put:
 
-          <div class="set-actions">
-            <button class="btn small" @click="markSet(exercise.id, set, true)">Mark Set</button>
-            <button class="btn small outline" @click="markSet(exercise.id, set, false)">Clear</button>
+          <div v-for="plate in getPlateLoadout(exercise.weight, exercise.initialWeight)">
+            {{ plate.count }} plate weighing {{ plate.plate }}lb
           </div>
         </div>
+        <p></p>
+      </div>
 
-        <div class="rep-grid">
-          <label
-              v-for="rep in exercise.reps"
-              :key="rep"
-              class="rep-box"
-          >
-            <input
-                type="checkbox"
-                v-model="checked[exercise.id][set][rep]"
-                class="hidden-checkbox"
-                @change="updateRep(exercise.id, set, rep)"
-            />
-            <span class="rep-number">{{ rep }}</span>
-          </label>
+      <div class="sets-container">
+        <div
+            v-for="(reps, set) in exercise.setsToReps"
+            :key="set"
+            class="set-row"
+            :class="{ completed: isSetComplete(exercise.id, set) }"
+        >
+          <div class="set-header">
+            <span class="set-label">Set {{ set }}</span>
+
+            <div class="set-actions">
+              <button class="btn small" @click="markSet(exercise.id, set, true)">Mark Set</button>
+              <button class="btn small outline" @click="markSet(exercise.id, set, false)">Clear</button>
+            </div>
+          </div>
+
+          <div class="rep-grid">
+            <label
+                v-for="rep in exercise.reps"
+                :key="rep"
+                class="rep-box"
+            >
+              <input
+                  type="checkbox"
+                  v-model="checked[exercise.id][set][rep]"
+                  class="hidden-checkbox"
+              />
+              <span class="rep-number">{{ rep }}</span>
+            </label>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from "vue";
-import { useRoute } from "vue-router";
+<script setup lang="ts">
+import type {GetWorkoutResponseDTO, UpdateWorkoutRequestDTO} from "@/types/workout.ts";
+import {ref, reactive, onMounted} from "vue";
+import {useRoute} from "vue-router";
 
 const route = useRoute();
 const id = route.params.id;
 
-const workout = ref({
-  trackedExercises: []
-});
-const workoutFetchError = ref(null);
+const isLoading = ref(true);
+const error = ref(null);
+const workoutResponse = ref<GetWorkoutResponseDTO | null>(null);
 
 const checked = reactive({});
+
+onMounted(async () => {
+  try {
+    await fetchWorkout();
+  } catch (error) {
+    error.value = error;
+  } finally {
+    isLoading.value = false;
+  }
+});
 
 const isSetComplete = (exId, set) => {
   return Object.values(checked[exId][set]).every(v => v === true);
@@ -77,57 +102,32 @@ const markSet = async (exerciseId, set, value) => {
   for (const rep in checked[exerciseId][set]) {
     checked[exerciseId][set][rep] = value;
   }
-
-  try {
-    await fetch(`/api/exercises/tracked/update/${exerciseId}?set=${set}&successfulSet=${value}`, {
-      method: 'POST',
-    });
-  } catch (err) {
-    console.error('Failed to update rep:', err);
-  }
 };
 
-const fetchWorkout = async () => {
-  const res = await fetch(`/api/workouts/get/${id}`);
+async function fetchWorkout() {
+  const res = await fetch(`/api/workouts/${id}`);
   if (!res.ok) {
-    workoutFetchError.value = true;
-    console.error('Failed to fetch workout:', res);
+    error.value = res;
     return;
   }
 
-  workout.value = await res.json();
-  for (const ex of workout.value.trackedExercises) {
+  workoutResponse.value = await res.json();
+  for (const ex of workoutResponse.value.workout.exercises) {
     checked[ex.id] = {};
-
-    for (let s = 1; s <= ex.sets; s++) {
-      checked[ex.id][s] = {};
+    for (const [set, rep] of Object.entries(ex.setsToReps)) {
+      checked[ex.id][set] = {};
       for (let r = 1; r <= ex.reps; r++) {
-        checked[ex.id][s][r] = r <= ex.repsPerSet[s];
+        checked[ex.id][set][r] = r <= ex.setsToReps[set];
       }
     }
   }
-};
-
-const updateRep = async (exerciseId, set, rep) => {
-  const isChecked = checked[exerciseId][set][rep];
-  try {
-    await fetch(`/api/exercises/tracked/update/${exerciseId}?set=${set}&successfulRep=${isChecked}`, {
-      method: 'POST',
-    });
-  } catch (err) {
-    console.error('Failed to update rep:', err);
-  }
-};
-
-function needsPlateLoadout(initialWeight) {
-  return initialWeight !== 0;
 }
 
 function getPlateLoadout(targetWeight, barWeight = 45, plateSizes = [45, 35, 25, 10, 5, 2.5]) {
   const plateTotal = targetWeight - barWeight;
 
   if (plateTotal < 0) {
-    return { error: "Target weight is less than the bar weight." };
+    return {error: "Target weight is less than the bar weight."};
   }
 
   let weightPerSide = plateTotal / 2;
@@ -139,19 +139,47 @@ function getPlateLoadout(targetWeight, barWeight = 45, plateSizes = [45, 35, 25,
   for (const plate of plateSizes) {
     const count = Math.floor(weightPerSide / plate);
     if (count > 0) {
-      result.push({ plate, count });
+      result.push({plate, count});
       weightPerSide -= plate * count;
     }
   }
 
   if (weightPerSide !== 0) {
-    return { error: "Cannot represent the weight exactly with the available plates." };
+    return {error: "Cannot represent the weight exactly with the available plates."};
   }
 
   return result; // per side
 }
 
-onMounted(fetchWorkout);
+async function submitWorkout() {
+  const updateRequest = ref<UpdateWorkoutRequestDTO | null>(null);
+  updateRequest.value = workoutResponse.value;
+  for (const ex of updateRequest.value.workout.exercises) {
+    for (const [set, rep] of Object.entries(ex.setsToReps)) {
+      let repCount = 0;
+      for (let r = 1; r <= ex.reps; r++) {
+        if (checked[ex.id][set][r]) {
+          repCount++;
+        }
+      }
+      ex.setsToReps[set] = repCount;
+    }
+  }
+
+  console.log("Submitting workout:", updateRequest.value);
+  const res = await fetch('/api/workouts/' + id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updateRequest.value)
+  });
+
+  if (!res.ok) {
+    alert("Failed to update workout");
+    return;
+  }
+
+  alert("Workout updated successfully!");
+}
 </script>
 
 <style scoped>
@@ -160,7 +188,7 @@ onMounted(fetchWorkout);
   padding: 16px;
   border-radius: 16px;
   margin-bottom: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   width: 75vw;
   max-width: 500px;
 }
@@ -262,13 +290,13 @@ onMounted(fetchWorkout);
 
   background: #ffffff;
   cursor: pointer;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
   transition: background 0.2s, box-shadow 0.2s;
 }
 
 /* Add a subtle highlight when checked */
 .rep-box:has(.hidden-checkbox:checked) {
   background: #4ab634;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.15);
 }
 </style>

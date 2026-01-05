@@ -137,12 +137,6 @@ async function loadExercises() {
 
 // Submit entire new workout
 async function submitWorkout() {
-  const payload = {
-    date: date.value,
-    type: workoutType.value,
-    trackedExercises: exercises.value
-  };
-
   console.log("Submitting workout:", createWorkoutRequest.value);
 
   const res = await fetch("/api/workouts", {

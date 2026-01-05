@@ -9,6 +9,8 @@ export interface WorkoutExerciseDTO {
     name: string;
     type: string;
     weight: number;
+    barExercise: boolean;
+    reps: number;
     setsToReps: NumberToNumberMap;
 }
 

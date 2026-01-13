@@ -9,7 +9,6 @@
     <h1 class="workout-title">{{ workoutResponse.workout.type }} workout for {{ workoutResponse.workout.date }}</h1>
 
     <div>
-
       <button
           @click="submitWorkout"
           class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
@@ -24,10 +23,10 @@
       <div class="weight-text">
         <p>Working weight is {{ exercise.weight }}lb</p>
         <div v-if="exercise.barExercise">
-          On each side please put:
+          Given the initial weight {{exercise.initialWeight}}, on each side please put:
 
           <div v-for="plate in getPlateLoadout(exercise.weight, exercise.initialWeight)">
-            {{ plate.count }} plate weighing {{ plate.plate }}lb
+            {{ plate.count }} plate(s) weighing {{ plate.plate }}lb
           </div>
         </div>
         <p></p>
@@ -67,21 +66,29 @@
       </div>
 
     </div>
+
+    <div>
+      <button
+          @click="deleteWorkout"
+          class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
+      >
+        Delete
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type {GetWorkoutResponseDTO, UpdateWorkoutRequestDTO} from "@/types/workout.ts";
 import {ref, reactive, onMounted} from "vue";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 
-const route = useRoute();
-const id = route.params.id;
+const id = useRoute().params.id;
+const router = useRouter();
 
 const isLoading = ref(true);
 const error = ref(null);
 const workoutResponse = ref<GetWorkoutResponseDTO | null>(null);
-
 const checked = reactive({});
 
 onMounted(async () => {
@@ -180,6 +187,22 @@ async function submitWorkout() {
 
   alert("Workout updated successfully!");
 }
+
+async function deleteWorkout() {
+  if (confirm("Are you sure you want to delete this workout?")) {
+    const res = await fetch('/api/workouts/' + id, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      alert("Failed to delete workout");
+      return;
+    }
+
+    await router.push(`/`);
+    alert("Workout deleted successfully!");
+  }
+}
 </script>
 
 <style scoped>
@@ -189,8 +212,6 @@ async function submitWorkout() {
   border-radius: 16px;
   margin-bottom: 24px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  width: 75vw;
-  max-width: 500px;
 }
 
 .workout-title {

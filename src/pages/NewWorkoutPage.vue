@@ -43,7 +43,8 @@
         class="p-4 border rounded-lg bg-white shadow-sm"
     >
       <div class="text-lg font-bold mb-3">
-        {{ exercise }}
+        <p>{{ exercise }}</p>
+        <p>Previous session notes: {{ createWorkoutRequest.exerciseToNotes[exercise] }}</p>
       </div>
 
       <!-- Weight -->
@@ -52,14 +53,14 @@
         <input
             type="number"
             :value="weight"
-            @input="createWorkoutRequest.exerciseToWeight[index] = +$event.target.value"
+            @input="createWorkoutRequest.exerciseToWeight[exercise] = +$event.target.value"
             class="w-full border rounded px-3 py-2"
         />
       </div>
-
     </div>
 
     <!-- Submit Button -->
+    <p></p>
     <button
         @click="submitWorkout"
         class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
@@ -70,19 +71,15 @@
 </template>
 
 <script setup lang="ts">
-import type {GetNextWorkoutDetailsResponseDTO, CreateWorkoutRequestDTO} from "@/types/workout.ts"
+import type {GetNextWorkoutDetailsResponseDTO, CreateWorkoutRequestDTO, CreateWorkoutResponseDTO} from "@/types/workout.ts"
 import { ref, onMounted } from "vue";
+import {useRouter} from "vue-router";
+
 const nextWorkoutDetails = ref<GetNextWorkoutDetailsResponseDTO | null>(null);
 const createWorkoutRequest = ref<CreateWorkoutRequestDTO | null>(null);
 const isLoading = ref(true);
 const error = ref(null);
-
-const date = ref("");
-const workoutType = ref("");
-const exercises = ref([]);
-
-const isLoadingExercises = ref(false);
-const exerciseError = ref(null);
+const router = useRouter();
 
 onMounted(async () => {
   await getNextWorkoutDetails();
@@ -96,6 +93,7 @@ async function getNextWorkoutDetails() {
       return;
     }
     nextWorkoutDetails.value = await res.json();
+    console.log(nextWorkoutDetails.value);
     createWorkoutRequest.value = nextWorkoutDetails.value;
   } catch (err) {
     error.value = err;
@@ -104,38 +102,6 @@ async function getNextWorkoutDetails() {
   }
 }
 
-// Fetch exercises when workout type is selected
-async function loadExercises() {
-  exercises.value = [];
-  exerciseError.value = null;
-
-  if (!workoutType.value) return;
-
-  try {
-    isLoadingExercises.value = true;
-
-    const res = await fetch(`/api/exercises/type/${workoutType.value}`);
-    if (!res.ok) {
-      throw new Error("Failed to load exercises due to error: " + res.status + res.statusText);
-    }
-
-    const data = await res.json();
-
-    // Give each exercise editable fields
-    exercises.value = data.map(ex => ({
-      ...ex,
-      weight: ex.initialWeight || 0,
-      reps: ex.reps || 5,
-      sets: ex.sets || 5
-    }));
-  } catch (err) {
-    exerciseError.value = err.message;
-  } finally {
-    isLoadingExercises.value = false;
-  }
-}
-
-// Submit entire new workout
 async function submitWorkout() {
   console.log("Submitting workout:", createWorkoutRequest.value);
 
@@ -149,7 +115,10 @@ async function submitWorkout() {
     alert("Failed to create workout");
     return;
   }
+  const id = ref<CreateWorkoutResponseDTO | null>(null);
+  id.value = await res.json();
 
+  await router.push(`/workouts/${id.value.id}`);
   alert("Workout created!");
 }
 </script>

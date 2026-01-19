@@ -21,6 +21,7 @@
     >
       <p class="title">{{ exercise.name }}</p>
       <table class="exercise-info">
+        <tbody>
         <tr>
           <td>Type</td>
           <td>{{ exercise.type }}</td>
@@ -50,18 +51,19 @@
                 @click="editExercise(exercise.id)"
                 class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
             >
-              <font-awesome-icon :icon="faPenToSquare" />
+              <font-awesome-icon :icon="faPenToSquare"/>
               Edit
             </button>
           </td>
         </tr>
+        </tbody>
       </table>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {faPenToSquare} from "@fortawesome/free-solid-svg-icons";
 import {useRouter} from "vue-router";
 import {onMounted, ref} from "vue";

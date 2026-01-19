@@ -6,14 +6,13 @@
     <h1>Workout fetch error for workout {{ id }}</h1>
   </div>
   <div v-else>
-    <h1 class="workout-title">{{ workoutResponse.workout.type }} workout for {{ workoutResponse.workout.date }}</h1>
-
+    <navigation-bar :title="pageTitle"/>
     <div>
       <button
           @click="submitWorkout"
           class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
       >
-       Save
+        Save
       </button>
       <p></p>
     </div>
@@ -23,7 +22,7 @@
       <div class="weight-text">
         <p>Working weight is {{ exercise.weight }}lb</p>
         <div v-if="exercise.barExercise">
-          Given the initial weight {{exercise.initialWeight}}lb, on each side please put:
+          Given the initial weight {{ exercise.initialWeight }}lb, on each side please put:
 
           <div v-for="plate in getPlateLoadout(exercise.weight, exercise.initialWeight)">
             {{ plate.count }} plate(s) weighing {{ plate.plate }}lb
@@ -79,7 +78,8 @@
 </template>
 
 <script setup lang="ts">
-import type {GetWorkoutResponseDTO, UpdateWorkoutRequestDTO} from "@/types/workout.ts";
+import NavigationBar from "../components/NavigationBar.vue";
+import type {GetWorkoutResponseDTO, UpdateWorkoutRequestDTO} from "../types/workout.ts";
 import {ref, reactive, onMounted} from "vue";
 import {useRoute, useRouter} from "vue-router";
 
@@ -89,6 +89,7 @@ const router = useRouter();
 const isLoading = ref(true);
 const error = ref(null);
 const workoutResponse = ref<GetWorkoutResponseDTO | null>(null);
+const pageTitle = ref("");
 const checked = reactive({});
 
 onMounted(async () => {
@@ -119,6 +120,7 @@ async function fetchWorkout() {
   }
 
   workoutResponse.value = await res.json();
+  pageTitle.value = workoutResponse.value.workout.type + " workout for " + workoutResponse.value.workout.date;
   for (const ex of workoutResponse.value.workout.exercises) {
     checked[ex.id] = {};
     for (const [set, rep] of Object.entries(ex.setsToReps)) {
@@ -176,7 +178,7 @@ async function submitWorkout() {
   console.log("Submitting workout:", updateRequest.value);
   const res = await fetch('/api/workouts/' + id, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify(updateRequest.value)
   });
 

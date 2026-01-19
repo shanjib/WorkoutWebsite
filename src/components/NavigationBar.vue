@@ -13,30 +13,41 @@
      <font-awesome-icon :icon="faArrowRotateLeft"/>
     </button>
     <h2 class="spacing">{{ title }}</h2>
+    <div
+        v-if="props.deleteButton"
+        class="spacing">
+      <button
+        @click="emitDelete"
+      >
+        <font-awesome-icon :icon="faTrashCan"/>
+        Delete
+      </button>
+    </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {faArrowRotateLeft, faHouse} from "@fortawesome/free-solid-svg-icons";
+import {faArrowRotateLeft, faHouse, faTrashCan} from "@fortawesome/free-solid-svg-icons";
 
 import {useRouter} from "vue-router";
+import {NavigationProps} from "../types/props";
 
 const router = useRouter();
-const props = defineProps({
-  title: String
-})
+const props = defineProps<NavigationProps>();
+const emit = defineEmits(["emitDelete"]);
 
 async function goHome() {
   await router.push('/');
 }
 
 async function goBack() {
-  await router.back();
+  router.back();
 }
-</script>
 
-<script lang="ts">
+async function emitDelete() {
+  emit("emitDelete");
+}
 </script>
 
 <style scoped>

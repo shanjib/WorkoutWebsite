@@ -1,13 +1,13 @@
 <template>
-  <div v-if="isLoading" class="text-gray-500 text-center">
+  <div v-if="isLoading">
     Loading next workout details...
   </div>
 
-  <div v-else-if="error" class="text-red-600 text-center font-semibold">
+  <div v-else-if="error">
     ⚠️ {{ error }}
   </div>
 
-  <div v-else class="p-6 space-y-6 max-w-2xl mx-auto">
+  <div v-else>
     <h1 class="text-3xl font-bold">Create Workout</h1>
 
     <!-- Date Input -->

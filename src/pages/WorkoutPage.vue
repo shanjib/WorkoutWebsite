@@ -10,9 +10,13 @@
     <div>
       <button
           @click="submitWorkout"
-          class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
       >
         Save
+      </button>
+      <button
+          @click="goToEdit"
+      >
+        Edit
       </button>
       <p></p>
     </div>
@@ -63,16 +67,6 @@
           </div>
         </div>
       </div>
-
-    </div>
-
-    <div>
-      <button
-          @click="deleteWorkout"
-          class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
-      >
-        Delete
-      </button>
     </div>
   </div>
 </template>
@@ -204,6 +198,10 @@ async function deleteWorkout() {
     await router.push(`/`);
     alert("Workout deleted successfully!");
   }
+}
+
+async function goToEdit() {
+  await router.push(`/workouts/edit/${id}`);
 }
 </script>
 

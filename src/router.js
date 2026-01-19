@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import HomePage from './pages/HomePage.vue'
 import WorkoutPage from './pages/WorkoutPage.vue';
+import EditWorkoutPage from './pages/EditWorkoutPage.vue'
 import NewWorkoutPage from './pages/NewWorkoutPage.vue';
 import ExercisePage from "./pages/ExercisePage.vue";
 import NewExercisePage from "./pages/NewExercisePage.vue";
@@ -9,6 +10,7 @@ import NewExercisePage from "./pages/NewExercisePage.vue";
 const routes = [
     { path: '/', component: HomePage },
     { path: '/workouts/:id', component: WorkoutPage },
+    { path: '/workouts/edit/:id', component: EditWorkoutPage },
     { path: '/workouts/new', component: NewWorkoutPage },
     { path: '/exercises/', component: ExercisePage },
     { path: '/exercises/new', component: NewExercisePage },

@@ -23,7 +23,7 @@
       <div class="weight-text">
         <p>Working weight is {{ exercise.weight }}lb</p>
         <div v-if="exercise.barExercise">
-          Given the initial weight {{exercise.initialWeight}}, on each side please put:
+          Given the initial weight {{exercise.initialWeight}}lb, on each side please put:
 
           <div v-for="plate in getPlateLoadout(exercise.weight, exercise.initialWeight)">
             {{ plate.count }} plate(s) weighing {{ plate.plate }}lb

@@ -17,7 +17,7 @@ export interface CreateExerciseResponseDTO {
 }
 
 export interface CreateExerciseDTO {
-    id: number;       // Java long → TS number
+    id: number;
     name: string;
     success: boolean;
 }

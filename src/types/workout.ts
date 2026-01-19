@@ -9,9 +9,11 @@ export interface WorkoutExerciseDTO {
     name: string;
     type: string;
     weight: number;
+    initialWeight: number;
     barExercise: boolean;
     reps: number;
     setsToReps: NumberToNumberMap;
+    notes: string;
 }
 
 export interface CreateWorkoutRequestDTO {
@@ -32,6 +34,7 @@ export interface GetNextWorkoutDetailsResponseDTO {
     type: string;
     date: string;
     exerciseToWeight: StringToNumberMap;
+    exerciseToNotes: StringToStringMap;
 }
 
 export interface GetLatestWorkoutsResponseDTO {
@@ -58,4 +61,8 @@ type NumberToNumberMap = {
 
 type StringToNumberMap = {
     [key: string]: number;
+}
+
+type StringToStringMap = {
+    [key: string]: string;
 }

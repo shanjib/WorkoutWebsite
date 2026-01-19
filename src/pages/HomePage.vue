@@ -7,7 +7,8 @@
   </div>
   <WorkoutList />
   <div class="flex items-center justify-center w-full">
-    button for exercises
+    <p></p>
+    <button class="button" @click="goToExercises()">Exercises</button>
   </div>
 </template>
 
@@ -17,8 +18,12 @@ import WorkoutList from '../components/WorkoutList.vue'
 const router = useRouter();
 const formattedDate = new Date().toISOString().split("T")[0];
 
-const newWorkout = async () => {
+async function newWorkout() {
   await router.push(`/workouts/new`);
+}
+
+async function goToExercises() {
+  await router.push("/exercises");
 }
 </script>
 

@@ -43,7 +43,7 @@
 
   </div>
   <button
-      @click="save"
+      @click="emitSave"
   >
     Save
   </button>
@@ -54,7 +54,7 @@ import {onMounted, ref} from "vue";
 import {EditWorkoutProps, PropExercise, WorkoutEmit} from "../types/props";
 
 const props = defineProps<EditWorkoutProps>();
-const emit = defineEmits(["save"]);
+const emit = defineEmits(["emitSave"]);
 const editableProps = ref<EditWorkoutProps>({
     propDate: props.propDate,
     propType: props.propType,
@@ -64,7 +64,7 @@ const editableProps = ref<EditWorkoutProps>({
 onMounted(() => {
 })
 
-async function save() {
+async function emitSave() {
   let exerciseMap = new Map<string, PropExercise>([]);
   for (let exercise of editableProps.value.propExercises) {
     exerciseMap.set(exercise.name, exercise);
@@ -74,6 +74,6 @@ async function save() {
     type: editableProps.value.propType,
     exerciseMap: exerciseMap
   });
-  emit("save", emitMessage.value);
+  emit("emitSave", emitMessage.value);
 }
 </script>

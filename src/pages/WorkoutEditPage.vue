@@ -18,7 +18,7 @@
         :propDate="workoutResponse.workout.date"
         :propType="workoutResponse.workout.type"
         :propExercises="exercises"
-        @save="saveWorkout"
+        @emitSave="saveWorkout"
     />
   </div>
 </template>
@@ -46,8 +46,8 @@ const exercises = ref<PropExercise[]>([]);
 onMounted(async () => {
   try {
     await fetchWorkout();
-  } catch (error) {
-    error.value = error;
+  } catch (err) {
+    error.value = err || "Failed to fetch workout details";
   } finally {
     isLoading.value = false;
   }
@@ -100,7 +100,7 @@ async function saveWorkout(emit: WorkoutEmit) {
   alert("Workout updated successfully!");
 }
 
-async function deleteWorkout(emit) {
+async function deleteWorkout() {
   if (confirm("Are you sure you want to delete this exercise?")) {
     const res = await fetch(`/api/workouts/${id}`, {
       method: "DELETE",

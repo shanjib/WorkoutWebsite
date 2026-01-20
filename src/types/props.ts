@@ -6,7 +6,7 @@ export interface NavigationProps {
 export interface PropExercise {
     name: string;
     weight: number;
-    notes: number;
+    notes: string;
 }
 
 export interface EditWorkoutProps {

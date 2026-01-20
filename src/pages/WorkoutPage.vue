@@ -89,8 +89,8 @@ const checked = reactive({});
 onMounted(async () => {
   try {
     await fetchWorkout();
-  } catch (error) {
-    error.value = error;
+  } catch (err) {
+    error.value = err || "Failed to fetch workout";
   } finally {
     isLoading.value = false;
   }

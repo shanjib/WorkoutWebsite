@@ -1,7 +1,7 @@
 <template>
   <navigation-bar
       title="New Workout"
-      :delete-button=false
+      :deleteButton=false
   />
   <div v-if="isLoading">
     Loading next workout details...

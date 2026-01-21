@@ -6,7 +6,10 @@
     <h1>Workout fetch error for workout {{ id }}</h1>
   </div>
   <div v-else>
-    <navigation-bar :title="pageTitle"/>
+    <navigation-bar
+        :title="pageTitle"
+        :deleteButton=false
+    />
     <div>
       <button
           @click="submitWorkout"

@@ -1,5 +1,8 @@
 <template>
-  <navigation-bar title="Exercises"/>
+  <navigation-bar
+      title="Exercises"
+      :deleteButton=false
+  />
   <div>
     <button
         @click="newExercise"

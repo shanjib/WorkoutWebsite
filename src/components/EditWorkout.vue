@@ -45,6 +45,7 @@
   <button
       @click="emitSave"
   >
+    <font-awesome-icon :icon="faFloppyDisk"/>
     Save
   </button>
 </template>
@@ -52,6 +53,8 @@
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
 import {EditWorkoutProps, PropExercise, WorkoutEmit} from "../types/props";
+import {faFloppyDisk} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const props = defineProps<EditWorkoutProps>();
 const emit = defineEmits(["emitSave"]);

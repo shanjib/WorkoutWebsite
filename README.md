@@ -1,6 +1,6 @@
-Initial Description of Behaviors
+# Initial Description of Behaviors
 
-home screen:
+## home screen:
 * today’s date
 * create new workout button
 * list previous 12 workouts + dates
@@ -45,7 +45,7 @@ new/edit exercise
 
 
 
-Work to be Done
+## Work to be Done
 * refactor exercise new/edit
   * follow workout pattern
   * edit component has a prop that takes in the edit details
@@ -58,4 +58,6 @@ Work to be Done
   * add a notes section
   * determine best saving strategy
     * auto save on each set? with a disappearing banner to confirm?
+  * during edit and creation, add or remove an exercise
+  * add a new workout type that can designate 
 * figure out if there's a way to avoid constant refreshes

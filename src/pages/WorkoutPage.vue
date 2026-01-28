@@ -14,11 +14,13 @@
       <button
           @click="submitWorkout"
       >
+        <font-awesome-icon :icon="faFloppyDisk"/>
         Save
       </button>
       <button
           @click="goToEdit"
       >
+        <font-awesome-icon :icon="faPenToSquare"/>
         Edit
       </button>
       <p></p>
@@ -79,6 +81,8 @@ import NavigationBar from "../components/NavigationBar.vue";
 import type {GetWorkoutResponseDTO, UpdateWorkoutRequestDTO} from "../types/workout.ts";
 import {ref, reactive, onMounted} from "vue";
 import {useRoute, useRouter} from "vue-router";
+import {faFloppyDisk, faPenToSquare} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const id = useRoute().params.id;
 const router = useRouter();
@@ -185,22 +189,6 @@ async function submitWorkout() {
   }
 
   alert("Workout updated successfully!");
-}
-
-async function deleteWorkout() {
-  if (confirm("Are you sure you want to delete this workout?")) {
-    const res = await fetch('/api/workouts/' + id, {
-      method: "DELETE",
-    });
-
-    if (!res.ok) {
-      alert("Failed to delete workout");
-      return;
-    }
-
-    await router.push(`/`);
-    alert("Workout deleted successfully!");
-  }
 }
 
 async function goToEdit() {

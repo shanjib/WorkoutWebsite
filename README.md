@@ -46,11 +46,6 @@ new/edit exercise
 
 
 ## Work to be Done
-* refactor exercise new/edit
-  * follow workout pattern
-  * edit component has a prop that takes in the edit details
-  * edit component emits the updated edit details
-  * the parent new/edit pages consume the emit and make the appropriate calls
 * WorkoutPage
   * make each exercise card a component?
   * have collapsable exercise cards

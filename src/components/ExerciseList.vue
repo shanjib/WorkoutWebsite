@@ -1,20 +1,17 @@
 <template>
-  <div v-if="isLoading" class="text-gray-500 text-center">
+  <div v-if="isLoading">
     Loading exercises...
   </div>
 
-  <div v-else-if="error" class="text-red-600 text-center font-semibold">
+  <div v-else-if="error">
     ⚠️ {{ error }}
   </div>
 
-  <div v-else-if="exerciseResponse.exercises.length == 0" class="text-gray-500 text-center">
+  <div v-else-if="exerciseResponse.exercises.length == 0">
     No exercises found.
   </div>
 
-  <div
-      v-else
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-  >
+  <div v-else>
     <div
         v-for="exercise in exerciseResponse.exercises"
         class="exercise-card"
@@ -49,7 +46,6 @@
           >
             <button
                 @click="editExercise(exercise.id)"
-                class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
             >
               <font-awesome-icon :icon="faPenToSquare"/>
               Edit

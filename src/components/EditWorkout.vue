@@ -23,24 +23,16 @@
   </div>
 
   <!-- Exercises Section -->
-  <h2 >Exercises</h2>
+  <h2>Exercises</h2>
   <div
       v-for="(exercise) in editableProps.propExercises"
   >
-    <div>
-      <p>{{ exercise.name }}</p>
-      <p>Previous session notes: {{ exercise.notes }}</p>
-    </div>
-
-    <div>
-      <label>Weight</label>
-      <input
-          type="number"
-          :value="exercise.weight"
-          @input="exercise.weight = +$event.target.value"
-      />
-    </div>
-
+    <edit-workout-exercise
+        :name="exercise.name"
+        :weight="exercise.weight"
+        notes=""
+        @updateWeight="updateExercise"
+    />
   </div>
   <button
       @click="emitSave"
@@ -55,6 +47,7 @@ import {onMounted, ref} from "vue";
 import {EditWorkoutProps, PropExercise, WorkoutEmit} from "../types/props";
 import {faFloppyDisk} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import EditWorkoutExercise from "./EditWorkoutExercise.vue";
 
 const props = defineProps<EditWorkoutProps>();
 const emit = defineEmits(["emitSave"]);
@@ -63,15 +56,19 @@ const editableProps = ref<EditWorkoutProps>({
     propType: props.propType,
     propExercises: props.propExercises,
   });
+const exerciseMap = new Map<string, PropExercise>([]);
 
 onMounted(() => {
-})
-
-async function emitSave() {
-  let exerciseMap = new Map<string, PropExercise>([]);
   for (let exercise of editableProps.value.propExercises) {
     exerciseMap.set(exercise.name, exercise);
   }
+})
+
+function updateExercise(emitMessage: PropExercise) {
+  exerciseMap.set(emitMessage.name, emitMessage);
+}
+
+async function emitSave() {
   let emitMessage = ref<WorkoutEmit>({
     date: editableProps.value.propDate,
     type: editableProps.value.propType,

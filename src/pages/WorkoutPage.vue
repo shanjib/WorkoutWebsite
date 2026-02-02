@@ -27,48 +27,59 @@
     </div>
 
     <div v-for="exercise in workoutResponse.workout.exercises" :key="exercise.id" class="exercise-card">
-      <h2 class="title">{{ exercise.name }}</h2>
-      <div class="weight-text">
-        <p>Working weight is {{ exercise.weight }}lb</p>
-        <div v-if="exercise.barExercise">
-          Given the initial weight {{ exercise.initialWeight }}lb, on each side please put:
-
-          <div v-for="plate in getPlateLoadout(exercise.weight, exercise.initialWeight)">
-            {{ plate.count }} plate(s) weighing {{ plate.plate }}lb
-          </div>
-        </div>
-        <p></p>
-      </div>
-
-      <div class="sets-container">
-        <div
-            v-for="(reps, set) in exercise.setsToReps"
-            :key="set"
-            class="set-row"
-            :class="{ completed: isSetComplete(exercise.id, set) }"
+      <div class="title">
+        <h2 class="title-text">{{ exercise.name }}</h2>
+        <button
+            class="title-button"
+            @click="collapse(exercise.id)"
         >
-          <div class="set-header">
-            <span class="set-label">Set {{ set }}</span>
+          <font-awesome-icon v-if="!exerciseToCollapse.get(exercise.id)" :icon="faAnglesUp" />
+          <font-awesome-icon v-else :icon="faAnglesDown" />
+        </button>
+      </div>
+      <div v-if="!exerciseToCollapse.get(exercise.id)">
+        <div class="weight-text">
+          <p>Working weight is {{ exercise.weight }}lb</p>
+          <div v-if="exercise.barExercise">
+            Given the initial weight {{ exercise.initialWeight }}lb, on each side please put:
 
-            <div class="set-actions">
-              <button class="btn small" @click="markSet(exercise.id, set, true)">Mark Set</button>
-              <button class="btn small outline" @click="markSet(exercise.id, set, false)">Clear</button>
+            <div v-for="plate in getPlateLoadout(exercise.weight, exercise.initialWeight)">
+              {{ plate.count }} plate(s) weighing {{ plate.plate }}lb
             </div>
           </div>
+          <p></p>
+        </div>
 
-          <div class="rep-grid">
-            <label
-                v-for="rep in exercise.reps"
-                :key="rep"
-                class="rep-box"
-            >
-              <input
-                  type="checkbox"
-                  v-model="checked[exercise.id][set][rep]"
-                  class="hidden-checkbox"
-              />
-              <span class="rep-number">{{ rep }}</span>
-            </label>
+        <div class="sets-container">
+          <div
+              v-for="(reps, set) in exercise.setsToReps"
+              :key="set"
+              class="set-row"
+              :class="{ completed: isSetComplete(exercise.id, set) }"
+          >
+            <div class="set-header">
+              <span class="set-label">Set {{ set }}</span>
+
+              <div class="set-actions">
+                <button class="btn small" @click="markSet(exercise.id, set, true)">Mark Set</button>
+                <button class="btn small outline" @click="markSet(exercise.id, set, false)">Clear</button>
+              </div>
+            </div>
+
+            <div class="rep-grid">
+              <label
+                  v-for="rep in exercise.reps"
+                  :key="rep"
+                  class="rep-box"
+              >
+                <input
+                    type="checkbox"
+                    v-model="checked[exercise.id][set][rep]"
+                    class="hidden-checkbox"
+                />
+                <span class="rep-number">{{ rep }}</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -81,7 +92,7 @@ import NavigationBar from "../components/NavigationBar.vue";
 import type {GetWorkoutResponseDTO, UpdateWorkoutRequestDTO} from "../types/workout.ts";
 import {ref, reactive, onMounted} from "vue";
 import {useRoute, useRouter} from "vue-router";
-import {faFloppyDisk, faPenToSquare} from "@fortawesome/free-solid-svg-icons";
+import {faAnglesDown, faAnglesUp, faFloppyDisk, faPenToSquare} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const id = useRoute().params.id;
@@ -92,6 +103,7 @@ const error = ref(null);
 const workoutResponse = ref<GetWorkoutResponseDTO | null>(null);
 const pageTitle = ref("");
 const checked = reactive({});
+const exerciseToCollapse = ref(new Map<string, boolean>([]));
 
 onMounted(async () => {
   try {
@@ -123,6 +135,7 @@ async function fetchWorkout() {
   workoutResponse.value = await res.json();
   pageTitle.value = workoutResponse.value.workout.type + " workout for " + workoutResponse.value.workout.date;
   for (const ex of workoutResponse.value.workout.exercises) {
+    initCollapseMap(ex.id);
     checked[ex.id] = {};
     for (const [set, rep] of Object.entries(ex.setsToReps)) {
       checked[ex.id][set] = {};
@@ -131,6 +144,22 @@ async function fetchWorkout() {
       }
     }
   }
+}
+
+function initCollapseMap(exerciseId: number) {
+  let key = "collapse-" + exerciseId.toString();
+  let saved = localStorage.getItem(key);
+  if (saved !== null) {
+    exerciseToCollapse.value.set(exerciseId, saved);
+  } else {
+    exerciseToCollapse.value.set(exerciseId, false);
+  }
+}
+
+function collapse(exerciseId: number) {
+  exerciseToCollapse.value.set(exerciseId, !exerciseToCollapse.value.get(exerciseId));
+  let key = "collapse-" + exerciseId.toString();
+  localStorage.setItem(key, exerciseToCollapse.value.get(exerciseId));
 }
 
 function getPlateLoadout(targetWeight, barWeight = 45, plateSizes = [45, 35, 25, 10, 5, 2.5]) {
@@ -205,17 +234,22 @@ async function goToEdit() {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.workout-title {
-  font-size: 2rem;
-  margin-bottom: 14px;
-  font-weight: 600;
+.title {
+  display: flex;
+  align-items: center;
 }
 
-.title {
+.title-text {
+  flex: 1;
+  text-align: center;
   font-size: 1.4rem;
   margin-bottom: 14px;
   font-weight: 600;
   color: #000000;
+}
+
+.title-button {
+  margin-left: auto;
 }
 
 .weight-text {

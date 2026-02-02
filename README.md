@@ -48,7 +48,6 @@ new/edit exercise
 ## Work to be Done
 * WorkoutPage
   * make each exercise card a component?
-  * have collapsable exercise cards
   * auto-collapse card when all sets are complete
   * add a notes section
   * determine best saving strategy

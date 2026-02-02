@@ -1,18 +1,18 @@
 <template>
   <div class="nav-bar">
     <button
-        class="spacing"
+        class="nav-bar-button"
         @click="goHome"
     >
       <font-awesome-icon :icon="faHouse"/>
     </button>
     <button
-        class="spacing"
+        class="spacing nav-bar-button"
         @click="goBack"
     >
      <font-awesome-icon :icon="faArrowRotateLeft"/>
     </button>
-    <h2 class="spacing">{{ title }}</h2>
+    <h2 class="nav-bar-text">{{ title }}</h2>
     <div
         v-if="props.deleteButton"
         class="spacing">
@@ -53,8 +53,16 @@ async function emitDelete() {
 <style scoped>
 .nav-bar {
   display: flex;
-  justify-content: center;
   align-items: center;
+}
+
+.nav-bar-text {
+  flex: 1;
+  text-align: center;
+}
+
+.nav-bar-button {
+  margin-right: auto;
 }
 
 .spacing {

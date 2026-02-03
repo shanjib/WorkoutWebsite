@@ -30,7 +30,7 @@
     <edit-workout-exercise
         :name="exercise.name"
         :weight="exercise.weight"
-        notes=""
+        :notes="exercise.notes"
         @updateWeight="updateExercise"
     />
   </div>

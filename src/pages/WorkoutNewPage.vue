@@ -25,7 +25,6 @@
 import type {
   GetNextWorkoutDetailsResponseDTO,
   CreateWorkoutRequestDTO,
-  CreateWorkoutResponseDTO
 } from "../types/workout.ts"
 import {ref, onMounted} from "vue";
 import {useRouter} from "vue-router";
@@ -56,22 +55,25 @@ async function getNextWorkoutDetails() {
     return;
   }
   nextWorkoutDetails.value = await res.json();
-  for(let exercise in nextWorkoutDetails.value.exerciseToWeight) {
+  for(let i in nextWorkoutDetails.value.exercises) {
     let propExercise = {
-      name: exercise,
-      weight: nextWorkoutDetails.value.exerciseToWeight[exercise],
+      name: nextWorkoutDetails.value.exercises[i].name,
+      weight: nextWorkoutDetails.value.exercises[i].weight,
+      notes: nextWorkoutDetails.value.exercises[i].notes
     }
     exercises.value.push(propExercise);
   }
 }
 
 async function saveWorkout(emit: WorkoutEmit) {
-  let request = ref<CreateWorkoutRequestDTO>(nextWorkoutDetails.value);
-  request.value.date = emit.date;
-  request.value.type = emit.type;
-  for (let exercise in request.value.exerciseToWeight) {
-    let propExercise = emit.exerciseMap.get(exercise);
-    request.value.exerciseToWeight[exercise] = propExercise.weight;
+  let request = ref<CreateWorkoutRequestDTO>({
+    date: emit.date,
+    type: emit.type,
+    exerciseToWeight: {}
+  });
+  for (let nameToProp of emit.exerciseMap) {
+    let propExercise = emit.exerciseMap.get(nameToProp[0]);
+    request.value.exerciseToWeight[nameToProp[0]] = propExercise.weight;
   }
   console.log("Submitting workout:", request.value);
 

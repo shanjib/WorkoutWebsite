@@ -33,8 +33,7 @@ export interface GetWorkoutResponseDTO {
 export interface GetNextWorkoutDetailsResponseDTO {
     type: string;
     date: string;
-    exerciseToWeight: Map<string, number>;
-    exerciseToNotes: StringToStringMap;
+    exercises: WorkoutExerciseDTO[];
 }
 
 export interface GetLatestWorkoutsResponseDTO {
